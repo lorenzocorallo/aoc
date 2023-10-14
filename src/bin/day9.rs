@@ -3,17 +3,9 @@ use std::collections::HashSet;
 use anyhow::Result;
 
 #[derive(Debug)]
-enum Direction {
-    U,
-    R,
-    D,
-    L,
-}
-
-#[derive(Debug)]
 struct Motion {
     length: i8,
-    direction: Direction,
+    direction: (i8, i8),
 }
 
 fn main() -> Result<()> {
@@ -22,18 +14,18 @@ fn main() -> Result<()> {
     let motions: Vec<Motion> = rows
         .into_iter()
         .map(|x| {
-            let split: Vec<&str> = x.split(" ").collect();
-            let direction = match split[0] {
-                "U" => Direction::U,
-                "D" => Direction::D,
-                "L" => Direction::L,
-                "R" => Direction::R,
+            let (dir, len) = x.split_once(" ").unwrap();
+            let direction = match dir {
+                "U" => (0, 1),
+                "D" => (0, -1),
+                "R" => (1, 0),
+                "L" => (-1, 0),
                 _ => unreachable!(),
             };
 
             return Motion {
                 direction,
-                length: split[1].parse().expect("Cool input bro!"),
+                length: len.parse().expect("Cool input bro!"),
             };
         })
         .collect();
@@ -44,16 +36,9 @@ fn main() -> Result<()> {
     let mut record: HashSet<(i8, i8)> = HashSet::new();
 
     for motion in motions.iter() {
-        let delta: (i8, i8) = match motion.direction {
-            Direction::U => (0, 1),
-            Direction::D => (0, -1),
-            Direction::R => (1, 0),
-            Direction::L => (-1, 0),
-        };
-
         for _ in 0..motion.length {
-            head.0 += delta.0;
-            head.1 += delta.1;
+            head.0 += motion.direction.0;
+            head.1 += motion.direction.1;
 
             let diff = ((head.0 - tail.0), (head.1 - tail.1));
             match diff {
@@ -84,7 +69,6 @@ fn main() -> Result<()> {
                 }
 
                 _ => unimplemented!("i'm strange"),
-
             }
 
             record.insert(tail);
